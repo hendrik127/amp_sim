@@ -1,7 +1,7 @@
 [project]
 name = "amp-sim"
 version = "0.1.0"
-description = "Add your description here"
+description = "guitar amplifier simulation using neural networks"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
