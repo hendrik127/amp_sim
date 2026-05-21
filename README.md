@@ -25,42 +25,28 @@ Training data is included in git lfs.
 
 ## Adding dependecies and creating environment
 
-install the [**uv**](https://docs.astral.sh/uv/) package manager
-linux/macos
+Have following tools installed:
+
+- uv
+- git lfs
+- make
+
+To install dependencies and intialize pre-commit hooks run
 ```
-curl -LsSf https://astral.sh/uv/install.sh | sh
+make install
 ```
-windows
+add dependencies:
 ```
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+uv add <package-name>
 ```
 
-to add dependency to project
-```
-uv add <package_name>
-```
+## TODO
+- test more architectures, make folder for models `src/models/`
+- create pipeline to run multiple experiments with different architectures and hyperparameters, etc. Right now this can be done manually in `/src/config.py`
+- Currently the model is fixed, iterate or find better architecture.
 
-to add dev dependency to project
+## Run training
 ```
-uv add --dev <package_name>
+uv run python src/train.py
 ```
-
-to install all the packages
-
-```
-uv sync
-```
-
-linting
-
-```
-uv run ruff check
-```
-
-formating
-
-```
-uv run ruff format
-```
-
 

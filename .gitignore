@@ -54,9 +54,7 @@ cover/
 # Translations
 *.mo
 *.pot
-# *.wav
-runs/*
-!runs/.gitkeep
+
 # Django stuff:
 *.log
 local_settings.py
@@ -218,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#ignore model weights
+*.pt 
