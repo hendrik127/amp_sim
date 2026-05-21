@@ -1,7 +1,27 @@
 # amp_sim
 
+## Project structure
+```
+amp-sim/
+│
+├── data/
+│   ├── input.wav    # DI guitar (dry input)
+│   │── output.wav   # Amp recording (target)
+│
+├── runs/   # auto-generated experiment outputs 
+├── src/
+│   ├── train.py
+│   ├── model.py
+│   ├── dataset.py
+│   ├── loss.py
+│   │─── config.py
+│
+└── README.md
+```
 
+## Training data
 
+Training data is included in git lfs. 
 
 ## Adding dependecies and creating environment
 
@@ -42,3 +62,5 @@ formating
 ```
 uv run ruff format
 ```
+
+

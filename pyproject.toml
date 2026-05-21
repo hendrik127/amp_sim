@@ -8,6 +8,7 @@ dependencies = [
     "auraloss>=0.4.0",
     "datetime>=6.0",
     "numpy>=2.4.2",
+    "pre-commit>=4.6.0",
     "scipy>=1.17.1",
     "soundfile>=0.13.1",
     "torch>=2.10.0",
