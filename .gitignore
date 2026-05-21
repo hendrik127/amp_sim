@@ -219,3 +219,5 @@ __marimo__/
 
 #ignore model weights
 *.pt 
+*.csv
+*.png
