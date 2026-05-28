@@ -8,7 +8,7 @@ import torch
 
 
 # DEFINE experiment name
-EXP_NAME = "amp_tcn_only_ESR_100_epochs_128_batch_size"
+EXP_NAME = "amp_tcn_only_ESR_100_epochs_128_batch_size_exponentialLR"
 
 
 # HYPERPARAMETERS HERE
