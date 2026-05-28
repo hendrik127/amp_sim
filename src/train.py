@@ -103,7 +103,7 @@ def main():
         avg_esr = esr_sum / n
         avg_spec = spec_sum / n
 
-        scheduler.step()
+        scheduler.step(avg_total)
 
         metrics["epoch"].append(epoch + 1)
         metrics["total"].append(avg_total)
