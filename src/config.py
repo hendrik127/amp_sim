@@ -8,18 +8,18 @@ import torch
 
 
 # DEFINE experiment name
-EXP_NAME = "amp_tcn"
+EXP_NAME = "amp_tcn_100_epochs_128_batch_size_exponentialLR_80_20_esr_mrstft_ReduceLROnPlateau_4stacks_acutally"
 
 
 # HYPERPARAMETERS HERE
-BATCH_SIZE = 16
-EPOCHS = 20
+BATCH_SIZE = 128
+EPOCHS = 100
 LR = 1e-3
 
 SEGMENT_LENGTH = 16384
 
 CHANNELS = 16
-DILATIONS = [1, 2, 4, 8, 16, 32, 64]
+DILATIONS = [1, 2, 4, 8, 16, 32, 64, 128]
 STACKS = 2
 #####################
 
