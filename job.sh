@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=4              # CPU tuumade arv
 #SBATCH --mem=32G                      # Mälumaht
 #SBATCH --time=30:00:00                # Maksimaalne tööaeg (HH:MM:SS)
-#SBATCH --output=slurm-%j.out          # Logi fail
+#SBATCH --output=logs/slurm-%j.out          # Logi fail
 # Keskkonna seadistamine
 # -------------------------
 
