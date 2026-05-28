@@ -42,9 +42,7 @@ def main():
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="min", patience=2, factor=0.5
-    )
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     loss_fn = CombinedLoss().to(DEVICE)
 
