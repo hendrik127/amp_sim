@@ -50,3 +50,9 @@ uv add <package-name>
 uv run python src/train.py
 ```
 
+## Training on HPC
+
+```
+make train_hpc
+```
+
