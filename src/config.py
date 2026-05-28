@@ -8,7 +8,7 @@ import torch
 
 
 # DEFINE experiment name
-EXP_NAME = "amp_tcn_100_epochs_128_batch_size_exponentialLR_80_20_esr_mrstft_ReduceLROnPlateau_4stacks"
+EXP_NAME = "amp_tcn_100_epochs_128_batch_size_exponentialLR_80_20_esr_mrstft_ReduceLROnPlateau_4stacks_acutally"
 
 
 # HYPERPARAMETERS HERE
@@ -20,7 +20,7 @@ SEGMENT_LENGTH = 16384
 
 CHANNELS = 16
 DILATIONS = [1, 2, 4, 8, 16, 32, 64]
-STACKS = 8
+STACKS = 4
 #####################
 
 DATA_DIR_PATH = "./data/"
