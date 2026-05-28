@@ -19,8 +19,8 @@ LR = 1e-3
 SEGMENT_LENGTH = 16384
 
 CHANNELS = 16
-DILATIONS = [1, 2, 4, 8, 16, 32, 64]
-STACKS = 4
+DILATIONS = [1, 2, 4, 8, 16, 32, 64, 128]
+STACKS = 2
 #####################
 
 DATA_DIR_PATH = "./data/"
