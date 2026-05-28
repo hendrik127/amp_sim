@@ -8,7 +8,7 @@ import torch
 
 
 # DEFINE experiment name
-EXP_NAME = "amp_tcn"
+EXP_NAME = "amp_tcn_only_ESR"
 
 
 # HYPERPARAMETERS HERE

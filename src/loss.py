@@ -30,6 +30,6 @@ class CombinedLoss(torch.nn.Module):
         # -------------------------
         # Combined
         # -------------------------
-        total = 0.6 * esr + 0.4 * spec
+        total = esr  # 0.6 * esr + 0.4 * spec
 
         return total, esr, spec
