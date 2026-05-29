@@ -1,82 +1,68 @@
 import csv
-import os
+import json
 
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from config import (
-    AMP_PATH,
-    BATCH_SIZE,
-    CHANNELS,
-    DEVICE,
-    DI_PATH,
-    DILATIONS,
-    EPOCHS,
-    LR,
-    RUN_DIR,
-    SEGMENT_LENGTH,
-    STACKS,
-)
+from config import AMP_PATH, DEVICE, DI_PATH, EXPERIMENTS, ExperimentConfig
 from dataset import LongAudioDataset
 from loss import CombinedLoss
 from model import AmpTCN
 from plotting import plot_metrics
 
 
-def main():
-    dataset = LongAudioDataset(
-        DI_PATH,
-        AMP_PATH,
-        SEGMENT_LENGTH,
-    )
+def make_scheduler(optimizer, config: ExperimentConfig):
+    kw = config.scheduler_kwargs
+    if config.scheduler == "ReduceLROnPlateau":
+        return torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", patience=5, factor=0.1, **kw
+        )
+    if config.scheduler == "ExponentialLR":
+        return torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99, **kw)
+    if config.scheduler == "CosineAnnealingLR":
+        return torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=config.epochs, **kw
+        )
+    raise ValueError(f"Unknown scheduler: {config.scheduler!r}")
 
+
+def step_scheduler(scheduler, loss: float):
+    if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+        scheduler.step(loss)
+    else:
+        scheduler.step()
+
+
+def train_one(config: ExperimentConfig):
+    run_dir = config.make_run_dir()
+
+    with open(run_dir / "hparams.json", "w") as f:
+        json.dump({**config.to_dict(), "device": DEVICE}, f, indent=2)
+
+    print(f"\n{'=' * 60}\nRun: {run_dir.name}\n{'=' * 60}")
+
+    dataset = LongAudioDataset(str(DI_PATH), str(AMP_PATH), config.segment_length)
     loader = DataLoader(
-        dataset,
-        batch_size=BATCH_SIZE,
-        shuffle=True,
-        drop_last=True,
+        dataset, batch_size=config.batch_size, shuffle=True, drop_last=True
     )
 
-    model = AmpTCN(CHANNELS, DILATIONS, STACKS).to(DEVICE)
-
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
-
-    # scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="min", patience=5, factor=0.1
-    )
-
+    model = AmpTCN(config.channels, config.dilations, config.stacks).to(DEVICE)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=config.lr)
+    scheduler = make_scheduler(optimizer, config)
     loss_fn = CombinedLoss().to(DEVICE)
 
-    metrics = {
-        "epoch": [],
-        "total": [],
-        "esr": [],
-        "spec": [],
-    }
-
+    metrics = {"epoch": [], "total": [], "esr": [], "spec": []}
     best_loss = float("inf")
 
-    # ========================================================
-    # Epoch loop
-    # ========================================================
-
-    for epoch in range(EPOCHS):
+    for epoch in range(config.epochs):
         model.train()
+        total_sum = esr_sum = spec_sum = 0.0
 
-        total_sum = 0
-        esr_sum = 0
-        spec_sum = 0
-
-        loader_tqdm = tqdm(loader, desc=f"Epoch {epoch + 1}/{EPOCHS}")
-
-        for x, y in loader_tqdm:
-            x = x.to(DEVICE).float()
-            y = y.to(DEVICE).float()
-
+        pbar = tqdm(loader, desc=f"Epoch {epoch + 1}/{config.epochs}")
+        for x, y in pbar:
+            x, y = x.to(DEVICE).float(), y.to(DEVICE).float()
             pred = model(x)
-
             loss, esr, spec = loss_fn(pred, y)
 
             optimizer.zero_grad()
@@ -87,52 +73,35 @@ def main():
             total_sum += loss.item()
             esr_sum += esr.item()
             spec_sum += spec.item()
-
-            loader_tqdm.set_postfix(
-                {
-                    "loss": loss.item(),
-                    "esr": esr.item(),
-                    "spec": spec.item(),
-                    "lr": optimizer.param_groups[0]["lr"],
-                }
+            pbar.set_postfix(
+                loss=f"{loss.item():.4f}",
+                esr=f"{esr.item():.4f}",
+                lr=f"{optimizer.param_groups[0]['lr']:.2e}",
             )
 
         n = len(loader)
+        avg_total, avg_esr, avg_spec = total_sum / n, esr_sum / n, spec_sum / n
 
-        avg_total = total_sum / n
-        avg_esr = esr_sum / n
-        avg_spec = spec_sum / n
-
-        scheduler.step(avg_total)
+        step_scheduler(scheduler, avg_total)
 
         metrics["epoch"].append(epoch + 1)
         metrics["total"].append(avg_total)
         metrics["esr"].append(avg_esr)
         metrics["spec"].append(avg_spec)
 
-        print(f"\nEpoch {epoch + 1} summary:")
-        print(f" total={avg_total:.6f}")
-        print(f" esr  ={avg_esr:.6f}")
-        print(f" spec ={avg_spec:.6f}")
+        print(
+            f"Epoch {epoch + 1}  total={avg_total:.6f}  esr={avg_esr:.6f}  spec={avg_spec:.6f}"
+        )
 
-        # Save best model
         if avg_total < best_loss:
             best_loss = avg_total
-            torch.save(model.state_dict(), os.path.join(RUN_DIR, "best_model.pt"))
+            torch.save(model.state_dict(), run_dir / "best_model.pt")
+        torch.save(model.state_dict(), run_dir / "last_model.pt")
 
-        # Save last model
-        torch.save(model.state_dict(), os.path.join(RUN_DIR, "last_model.pt"))
-
-    # ========================================================
-    # Save CSV
-    # ========================================================
-
-    csv_path = os.path.join(RUN_DIR, "metrics.csv")
-
+    csv_path = run_dir / "metrics.csv"
     with open(csv_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["epoch", "total", "esr", "spec"])
-
         for i in range(len(metrics["epoch"])):
             writer.writerow(
                 [
@@ -143,15 +112,14 @@ def main():
                 ]
             )
 
-    print(f"Saved metrics → {csv_path}")
+    plot_metrics(metrics, run_dir)
+    print(f"Done → {run_dir}")
 
-    # ========================================================
-    # Plot
-    # ========================================================
 
-    plot_metrics(metrics)
-
-    print("Training complete.")
+def main():
+    for i, config in enumerate(EXPERIMENTS):
+        print(f"\nExperiment {i + 1}/{len(EXPERIMENTS)}: {config.slug()}")
+        train_one(config)
 
 
 if __name__ == "__main__":
