@@ -11,7 +11,7 @@
 # -------------------------
 
 # Liigu projekti kataloogi
-cd ~/amp_sim/
+cd ~/repos/amp_sim/
 
 uv sync
 
