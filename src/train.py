@@ -8,7 +8,7 @@ from tqdm import tqdm
 from config import AMP_PATH, DEVICE, DI_PATH, EXPERIMENTS, ExperimentConfig
 from dataset import LongAudioDataset
 from loss import CombinedLoss
-from model import AmpTCN
+from models.amp_tcn import AmpTCN
 from plotting import plot_metrics
 
 
