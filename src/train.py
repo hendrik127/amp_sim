@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from config import AMP_PATH, DEVICE, DI_PATH, EXPERIMENTS, ExperimentConfig
+from config import AMP_PATH, DEVICE, DI_PATH, EXPERIMENTS, AMP_VAL_PATH, DI_VAL_PATH, ExperimentConfig
 from dataset import LongAudioDataset
 from loss import CombinedLoss
 from models.amp_tcn import AmpTCN
@@ -42,12 +42,12 @@ def train_one(config: ExperimentConfig):
 
     print(f"\n{'=' * 60}\nRun: {run_dir.name}\n{'=' * 60}")
 
-    dataset = LongAudioDataset(str(DI_PATH), str(AMP_PATH), config.segment_length)
-    loader = DataLoader(
+    train_dataset = LongAudioDataset(str(DI_PATH), str(AMP_PATH), config.segment_length)
+    train_loader = DataLoader(
         dataset, batch_size=config.batch_size, shuffle=True, drop_last=True
     )
 
-    model = AmpTCN(config.channels, config.dilations, config.stacks).to(DEVICE)
+    model = config.create_model()
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.lr)
     scheduler = make_scheduler(optimizer, config)
     loss_fn = CombinedLoss().to(DEVICE)
