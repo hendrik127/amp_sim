@@ -13,11 +13,14 @@ class LongAudioDataset(Dataset):
     Key idea:
     - load full recording once
     - randomly sample chunks forever
+
+    Sample randomly during training, deterministically during validation
     """
 
-    def __init__(self, di_path, amp_path, segment_length=16384, dataset_size=20000):
+    def __init__(self, di_path, amp_path, segment_length=16384, dataset_size=20000, is_val=False):
         self.segment_length = segment_length
         self.dataset_size = dataset_size
+        self.is_val = is_val
 
         self.di, sr1 = load_mono_audio(di_path)
         self.amp, sr2 = load_mono_audio(amp_path)
@@ -28,19 +31,28 @@ class LongAudioDataset(Dataset):
         self.di = self.di[:min_len]
         self.amp = self.amp[:min_len]
 
+        if is_val:
+            self.chunks = []
+            start = 0
+            while start + segment_length <= len(self.di):
+                self.chunks.append((start, start + segment_length))
+                start += segment_length  
+        else:
+            self.dataset_size = dataset_size
+
+        
+
     def __len__(self):
-        return self.dataset_size
+        return len(self.chunks) if self.is_val else self.dataset_size
 
     def __getitem__(self, idx):
-        max_start = len(self.di) - self.segment_length
-        start = random.randint(0, max_start)
-
-        end = start + self.segment_length
-
-        x = self.di[start:end]
-        y = self.amp[start:end]
-
-        x = torch.from_numpy(x).unsqueeze(0)
-        y = torch.from_numpy(y).unsqueeze(0)
-
+        if self.is_val:
+            start, end = self.chunks[idx]
+        else:
+            max_start = len(self.di) - self.segment_length
+            start = random.randint(0, max_start)
+            end = start + self.segment_length
+        
+        x = torch.from_numpy(self.di[start:end]).unsqueeze(0)
+        y = torch.from_numpy(self.amp[start:end]).unsqueeze(0)
         return x, y
