@@ -24,6 +24,7 @@ class BaseConfig(ABC):
     epochs: int = 100
     lr: float = 1e-3
     segment_length: int = 16384
+    train_dataset_size: int = 20000 #samples per epoch
     # Scheduler: "ReduceLROnPlateau" | "ExponentialLR" | "CosineAnnealingLR"
     scheduler: str = "ReduceLROnPlateau"
     scheduler_kwargs: dict = field(default_factory=dict)
