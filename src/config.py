@@ -1,11 +1,14 @@
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
+from abc import ABC, abstractmethod
 
 import torch
 
 DI_PATH = Path("./data/input.wav")
 AMP_PATH = Path("./data/output.wav")
+DI_VAL_PATH = Path("./data/input_val.wav")
+AMP_VAL_PATH = Path("./data/output_val.wav")
 
 if torch.cuda.is_available():
     DEVICE = "cuda"
@@ -15,7 +18,7 @@ else:
     DEVICE = "cpu"
 
 @dataclass
-class BaseConfig:
+class BaseConfig(ABC):
     # Training
     batch_size: int = 128
     epochs: int = 100
@@ -24,6 +27,17 @@ class BaseConfig:
     # Scheduler: "ReduceLROnPlateau" | "ExponentialLR" | "CosineAnnealingLR"
     scheduler: str = "ReduceLROnPlateau"
     scheduler_kwargs: dict = field(default_factory=dict)
+
+    @abstractmethod
+    def slug(self) -> str:
+        #Unique identifier for this experiment
+        pass
+    
+    @abstractmethod
+    def create_model(self):
+        #Make the model
+        pass
+
     def make_run_dir(self) -> Path:
         ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         p = Path(f"runs/{ts}_{self.slug()}")
@@ -32,6 +46,7 @@ class BaseConfig:
     
     def to_dict(self) -> dict:
         return asdict(self)
+    
 
 @dataclass
 class TCNConfig(BaseConfig):
@@ -43,6 +58,10 @@ class TCNConfig(BaseConfig):
         sched = self.scheduler.replace("LR", "").replace("OnPlateau", "")
         return f"ch{self.channels}_s{self.stacks}_dil{max(self.dilations)}_lr{self.lr:.0e}_{sched}"
     
+    def create_model(self):
+        from models import AmpTCN  
+        return AmpTCN(self.channels, self.dilations, self.stacks)
+
 @dataclass
 class GRUConfig(BaseConfig):
     hidden_size: int = 32
@@ -52,6 +71,10 @@ class GRUConfig(BaseConfig):
     def slug(self) -> str:
         sched = self.scheduler.replace("LR", "").replace("OnPlateau", "")
         return f"gru_h{self.hidden_size}_l{self.num_layers}_d{self.dropout}_lr{self.lr:.0e}_{sched}"
+
+    def create_model(self):
+        from models import AmpGRU
+        return AmpGRU(1, self.hidden_size, self.num_layers, self.dropout)
 
 # ── Define experiments here ──────────────────────────────────────────────────
 
