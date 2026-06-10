@@ -4,12 +4,7 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 
 import torch
-'''
-DI_PATH = Path("../data/input.wav")
-AMP_PATH = Path("../data/output.wav")
-DI_VAL_PATH = Path("../data/input_val.wav")
-AMP_VAL_PATH = Path("../data/output_val.wav")
-'''
+
 PROJECT_ROOT = Path(__file__).parent.parent
 
 DI_PATH = PROJECT_ROOT / "data" / "input.wav"

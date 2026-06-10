@@ -12,3 +12,4 @@ def load_mono_audio(path):
         audio = audio.mean(axis=1)
 
     return audio.astype(np.float32), sr
+

@@ -231,7 +231,7 @@ def main_search():
         channels=best_channels,
         stacks=best_stacks,
         lr=best_lr,
-        epochs=100  # Full epochs
+        epochs=100 
     )
     
     final_val_loss, final_model = train_one(final_config, return_model=True)

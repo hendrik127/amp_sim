@@ -4,6 +4,7 @@
 from tcn_experiment import ExperimentTracker, count_parameters, measure_inference_speed, run_and_benchmark
 from config import GRUConfig, DEVICE
 from datetime import datetime
+from train import train_one 
 
 
 class GRUSequentialSearcher:
@@ -98,7 +99,7 @@ def main_search():
     
     # Phase 3: Learning rate sweep
     best_lr = searcher.search_lr(
-        lr_list=[2e-3, 1e-3, 5e-4, 2e-4, 1e-4],
+        lr_list=[2e-3, 1e-3, 5e-4, 2e-4],
         hidden_size=best_hidden,
         num_layers=best_layers,
         epochs=20
