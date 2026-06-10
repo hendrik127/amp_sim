@@ -4,11 +4,18 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 
 import torch
+'''
+DI_PATH = Path("../data/input.wav")
+AMP_PATH = Path("../data/output.wav")
+DI_VAL_PATH = Path("../data/input_val.wav")
+AMP_VAL_PATH = Path("../data/output_val.wav")
+'''
+PROJECT_ROOT = Path(__file__).parent.parent
 
-DI_PATH = Path("./data/input.wav")
-AMP_PATH = Path("./data/output.wav")
-DI_VAL_PATH = Path("./data/input_val.wav")
-AMP_VAL_PATH = Path("./data/output_val.wav")
+DI_PATH = PROJECT_ROOT / "data" / "input.wav"
+AMP_PATH = PROJECT_ROOT / "data" / "output.wav"
+DI_VAL_PATH = PROJECT_ROOT / "data" / "input_val.wav"  
+AMP_VAL_PATH = PROJECT_ROOT / "data" / "output_val.wav"
 
 if torch.cuda.is_available():
     DEVICE = "cuda"
@@ -60,7 +67,7 @@ class TCNConfig(BaseConfig):
         return f"ch{self.channels}_s{self.stacks}_dil{max(self.dilations)}_lr{self.lr:.0e}_{sched}"
     
     def create_model(self):
-        from models import AmpTCN  
+        from models.AmpTCN import AmpTCN  
         return AmpTCN(self.channels, self.dilations, self.stacks)
 
 @dataclass
@@ -74,7 +81,7 @@ class GRUConfig(BaseConfig):
         return f"gru_h{self.hidden_size}_l{self.num_layers}_d{self.dropout}_lr{self.lr:.0e}_{sched}"
 
     def create_model(self):
-        from models import AmpGRU
+        from models.AmpGRU import AmpGRU
         return AmpGRU(1, self.hidden_size, self.num_layers, self.dropout)
 
 # ── Define experiments here ──────────────────────────────────────────────────
