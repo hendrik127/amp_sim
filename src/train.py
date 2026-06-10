@@ -5,14 +5,14 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from config import AMP_PATH, DEVICE, DI_PATH, EXPERIMENTS, AMP_VAL_PATH, DI_VAL_PATH, ExperimentConfig
+from config import AMP_PATH, DEVICE, DI_PATH, EXPERIMENTS, AMP_VAL_PATH, DI_VAL_PATH, BaseConfig
 from dataset import LongAudioDataset
 from loss import CombinedLoss
-from models.amp_tcn import AmpTCN
+#from models.AmpTCN import AmpTCN
 from plotting import plot_metrics
 
 
-def make_scheduler(optimizer, config: ExperimentConfig):
+def make_scheduler(optimizer, config: BaseConfig):
     kw = config.scheduler_kwargs
     if config.scheduler == "ReduceLROnPlateau":
         return torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -52,7 +52,7 @@ def validate(model, val_loader, loss_fn, device):
     return total_sum / n, esr_sum / n, spec_sum / n
 
 
-def train_one(config: ExperimentConfig):
+def train_one(config: BaseConfig, return_model=False):
     run_dir = config.make_run_dir()
 
     with open(run_dir / "hparams.json", "w") as f:
@@ -179,6 +179,12 @@ def train_one(config: ExperimentConfig):
 
     plot_metrics(metrics, run_dir)
     print(f"Done → {run_dir}")
+    if return_model:
+        # Load best model
+        model.load_state_dict(torch.load(run_dir / "best_model.pt"))
+        return best_val_loss, model
+
+    return best_val_loss
 
 
 def main():
