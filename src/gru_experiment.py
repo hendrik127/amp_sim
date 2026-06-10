@@ -82,7 +82,7 @@ def main_search():
     
     # Phase 1: Hidden size sweep
     best_hidden = searcher.search_hidden_size(
-        hidden_list=[32, 64, 128, 256],
+        hidden_list=[32, 64, 128],
         num_layers=2,
         lr=1e-3,
         epochs=20
@@ -90,7 +90,7 @@ def main_search():
     
     # Phase 2: Number of layers sweep
     best_layers = searcher.search_num_layers(
-        layers_list=[1, 2, 3, 4],
+        layers_list=[1, 2, 3],
         hidden_size=best_hidden,
         lr=1e-3,
         epochs=20
