@@ -32,7 +32,7 @@ class ExperimentTracker:
             "slug": config.slug(),
             "val_loss": val_loss,
             "inference_time_ms": inference_time_ms,
-            "realtime_ratio": 44100 * (inference_time_ms / 1000), 
+            "realtime_ratio": (config.segment_length * 1000) / (44100 * inference_time_ms), 
             "param_count": param_count,
             "epochs_trained": config.epochs,
             **asdict(config)  
@@ -120,7 +120,7 @@ def run_and_benchmark(config, tracker=None):
         "val_loss": val_loss,
         "param_count": param_count,
         "inference_time_ms": inference_time_ms,
-        "realtime_ratio": 44100 * (inference_time_ms / 1000) / config.segment_length
+        "realtime_ratio": (config.segment_length * 1000) / (44100 * inference_time_ms)
     }
 
 
